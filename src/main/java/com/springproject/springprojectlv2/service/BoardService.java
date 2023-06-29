@@ -28,7 +28,7 @@ public class BoardService {
 
     // 게시글 전체 조회
     public List<BoardResponseDto> getBoardList() {
-        return boardRepository.findAllByOrderByModifiedAtDesc().stream()        // DB 에서 조회한 List -> stream 으로 변환
+        return boardRepository.findAllByOrderByCreatedAtDesc().stream()        // DB 에서 조회한 List -> stream 으로 변환
                 .map(BoardResponseDto::new)     // stream 처리를 통해, Board 객체 -> BoardResponseDto 로 변환
                 .toList();      // 다시 stream -> List 로 변환
     }
