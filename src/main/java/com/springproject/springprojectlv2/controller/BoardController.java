@@ -2,7 +2,9 @@ package com.springproject.springprojectlv2.controller;
 
 import com.springproject.springprojectlv2.dto.BoardRequestDto;
 import com.springproject.springprojectlv2.dto.BoardResponseDto;
+import com.springproject.springprojectlv2.dto.MsgResponseDto;
 import com.springproject.springprojectlv2.service.BoardService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,8 +20,8 @@ public class BoardController {
 
     // 게시글 작성
     @PostMapping("/board")
-    public BoardResponseDto createBoard(@RequestBody BoardRequestDto requestDto) {
-        return boardService.createBoard(requestDto);
+    public BoardResponseDto createBoard(@RequestBody BoardRequestDto requestDto, HttpServletRequest request) {
+        return boardService.createBoard(requestDto, request);
     }
 
     // 게시글 전체 조회
@@ -36,14 +38,13 @@ public class BoardController {
 
     // 게시글 수정
     @PutMapping("/board/{id}")
-    public BoardResponseDto updateBoard(@PathVariable Long id, @RequestBody BoardRequestDto requestDto) {
-        return boardService.updateBoard(id, requestDto);
+    public BoardResponseDto updateBoard(@PathVariable Long id, @RequestBody BoardRequestDto requestDto, HttpServletRequest request) {
+        return boardService.updateBoard(id, requestDto, request);
     }
 
     // 게시글 삭제
-    @DeleteMapping("/board/{id}") 		// password 를 주소창에 노출시키지 않고, body 로 받았다
-    public BoardResponseDto deleteBoard(@PathVariable Long id, @RequestBody BoardRequestDto requestDto) {
-        return boardService.deleteBoard(id, requestDto);
-//        return boardService.deleteBoard(id, requestDto.getPassword());
+    @DeleteMapping("/board/{id}")
+    public MsgResponseDto deleteBoard(@PathVariable Long id, HttpServletRequest request) {
+        return boardService.deleteBoard(id, request);
     }
 }

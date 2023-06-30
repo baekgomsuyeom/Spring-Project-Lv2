@@ -2,31 +2,47 @@ package com.springproject.springprojectlv2.service;
 
 import com.springproject.springprojectlv2.dto.BoardRequestDto;
 import com.springproject.springprojectlv2.dto.BoardResponseDto;
+import com.springproject.springprojectlv2.dto.MsgResponseDto;
 import com.springproject.springprojectlv2.entity.Board;
+
+import com.springproject.springprojectlv2.entity.User;
+import com.springproject.springprojectlv2.jwt.JwtUtil;
 import com.springproject.springprojectlv2.repository.BoardRepository;
+import com.springproject.springprojectlv2.repository.UserRepository;
+import io.jsonwebtoken.Claims;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 
 @Service
 public class BoardService {
     private final BoardRepository boardRepository;
+    private final UserRepository userRepository;
+    private final JwtUtil jwtUtil;
 
-    public BoardService(BoardRepository boardRepository) {
+    public BoardService(BoardRepository boardRepository, UserRepository userRepository, JwtUtil jwtUtil) {
         this.boardRepository = boardRepository;
+        this.userRepository = userRepository;
+        this.jwtUtil = jwtUtil;
     }
 
     // 게시글 작성
-    public BoardResponseDto createBoard(BoardRequestDto requestDto) {
-        Board board = new Board(requestDto);
-        Board saveBoard = boardRepository.save(board);
-        BoardResponseDto boardResponseDto = new BoardResponseDto(saveBoard);
+    public BoardResponseDto createBoard(BoardRequestDto requestDto, HttpServletRequest request) {
+        User user = getUserFromToken(request);			// getUserFromToken 메서드를 호출
 
-        return boardResponseDto;
+        // 여기 3줄은 입문 에서의 '게시글 작성'과 동일
+        Board board = new Board(requestDto, user);      // user? user.getId()?
+        Board saveBoard = boardRepository.save(board);
+
+        return new BoardResponseDto(saveBoard);
     }
 
     // 게시글 전체 조회
+    @Transactional(readOnly = true)
     public List<BoardResponseDto> getBoardList() {
         return boardRepository.findAllByOrderByCreatedAtDesc().stream()        // DB 에서 조회한 List -> stream 으로 변환
                 .map(BoardResponseDto::new)     // stream 처리를 통해, Board 객체 -> BoardResponseDto 로 변환
@@ -46,38 +62,48 @@ public class BoardService {
 
     // 게시글 수정
     @Transactional
-    public BoardResponseDto updateBoard(Long id, BoardRequestDto requestDto) {
-        // DB에 해당 id 의 게시글이 존재하는지 확인
-        Board board = findBoard(id);
+    public BoardResponseDto updateBoard(Long id, BoardRequestDto requestDto, HttpServletRequest request) {
+        User user = getUserFromToken(request);			// getUserFromToken 메서드를 호출
 
-        // 비밀번호 일치 여부 확인
-        if (board.getPassword().equals(requestDto.getPassword())) {
-            board.update(requestDto);
-        } else {
-            return new BoardResponseDto("비밀번호가 일치하지 않습니다.");
-        }
+        Board board = boardRepository.findByIdAndUserId(id, user.getId()).orElseThrow(
+                () -> new IllegalArgumentException("해당 사용자의 게시글을 찾을 수 없습니다.")
+        );
+
+        board.update(requestDto);
 
         return new BoardResponseDto(board);
     }
 
     // 게시글 삭제
-    public BoardResponseDto deleteBoard(Long id, BoardRequestDto requestDto) {
-        Board board = findBoard(id);
+    public MsgResponseDto deleteBoard(Long id, HttpServletRequest request) {
+        User user = getUserFromToken(request);			// getUserFromToken 메서드를 호출
 
-        // 비밀번호 일치 여부 확인
-        if (board.getPassword().equals(requestDto.getPassword())) {
-            boardRepository.delete(board);
-        } else {
-            new BoardResponseDto("비밀번호가 일치하지 않습니다.");
-        }
+        Board board = boardRepository.findByIdAndUserId(id, user.getId()).orElseThrow(
+                () -> new IllegalArgumentException("해당 사용자의 게시글을 찾을 수 없습니다.")
+        );
 
-        return new BoardResponseDto("게시글을 삭제했습니다.");        // 게시글 삭제 시, 삭제 성공 메시지
+        boardRepository.delete(board);
+
+        return new MsgResponseDto("게시글을 삭제했습니다.", HttpStatus.OK.value());
     }
 
-    // id 일치 여부 확인 (공용 사용되는 부분)
-    private Board findBoard(Long id) {
-        return boardRepository.findById(id).orElseThrow(() ->
-                new IllegalArgumentException("선택한 게시글은 존재하지 않습니다.")
-        );
+    private User getUserFromToken(HttpServletRequest request) {
+        String token = jwtUtil.getJwtFromHeader(request);       // request 에서 Token 가져오기
+        Claims claims;          // JWT 안에 있는 정보를 담는 Claims 객체
+
+        if (StringUtils.hasText(token)) {        // JWT 토큰 있는지 확인
+            if (jwtUtil.validateToken(token)) {     // JWT 토큰 검증
+                claims = jwtUtil.getUserInfoFromToken(token);       // ture 일 경우, JWT 토큰에서 사용자 정보 가져오기
+            } else {
+                throw new IllegalArgumentException("올바른 token 이 아닙니다.");
+            }
+
+            // 검증된 JWT 토큰에서 사용자 정보 조회 및 가져오기
+            return userRepository.findByUsername(claims.getSubject()).orElseThrow(
+                    () -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다.")
+            );
+        }
+
+        throw new IllegalArgumentException("token 이 없습니다.");
     }
 }
