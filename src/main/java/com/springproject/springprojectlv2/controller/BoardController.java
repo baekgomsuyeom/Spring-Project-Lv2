@@ -5,18 +5,16 @@ import com.springproject.springprojectlv2.dto.BoardResponseDto;
 import com.springproject.springprojectlv2.dto.MsgResponseDto;
 import com.springproject.springprojectlv2.service.BoardService;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api")
 public class BoardController {
     private final BoardService boardService;
-
-    public BoardController(BoardService boardService) {
-        this.boardService = boardService;
-    }
 
     // 게시글 작성
     @PostMapping("/board")

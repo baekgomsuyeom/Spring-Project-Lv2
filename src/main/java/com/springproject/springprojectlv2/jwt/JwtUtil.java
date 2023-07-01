@@ -49,7 +49,7 @@ public class JwtUtil {
                         .compact();
     }
 
-    // header 에서 JWT 가져오기
+    // 3. header 에서 JWT 가져오기
     public String getJwtFromHeader(HttpServletRequest request) {
         String bearerToken = request.getHeader(AUTHORIZATION_HEADER);
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(BEARER_PREFIX)) {
@@ -58,13 +58,12 @@ public class JwtUtil {
         return null;
     }
 
-    /* 5. JWT 토큰 검증 */
+    /* 4. JWT 토큰 검증 */
     // 토큰의 만료, 위/변조 를 검증
     public boolean validateToken(String token) {
         try {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
             return true;
-//        } catch (SecurityException | MalformedJwtException | SignatureException e) {
         } catch (SecurityException | MalformedJwtException e) {
             log.error("Invalid JWT signature, 유효하지 않는 JWT 서명 입니다.");
         } catch (ExpiredJwtException e) {
@@ -77,7 +76,7 @@ public class JwtUtil {
         return false;
     }
 
-    /* 6. JWT 토큰에서 사용자 정보 가져오기 */
+    /* 5. JWT 토큰에서 사용자 정보 가져오기 */
     public Claims getUserInfoFromToken(String token) {
         return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();     // body 에 있는 claims 를 가져온다
     }
