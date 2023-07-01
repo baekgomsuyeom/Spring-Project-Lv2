@@ -1,11 +1,10 @@
 package com.springproject.springprojectlv2.dto;
 
-import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
-import lombok.Setter;
+import lombok.NoArgsConstructor;
 
 @Getter
-@Setter
+@NoArgsConstructor
 public class LoginRequestDto {
     private String username;
     private String password;

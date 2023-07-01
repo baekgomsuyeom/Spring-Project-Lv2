@@ -4,13 +4,13 @@ import com.springproject.springprojectlv2.dto.BoardRequestDto;
 import com.springproject.springprojectlv2.dto.BoardResponseDto;
 import com.springproject.springprojectlv2.dto.MsgResponseDto;
 import com.springproject.springprojectlv2.entity.Board;
-
 import com.springproject.springprojectlv2.entity.User;
 import com.springproject.springprojectlv2.jwt.JwtUtil;
 import com.springproject.springprojectlv2.repository.BoardRepository;
 import com.springproject.springprojectlv2.repository.UserRepository;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,23 +19,18 @@ import org.springframework.util.StringUtils;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class BoardService {
     private final BoardRepository boardRepository;
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
-
-    public BoardService(BoardRepository boardRepository, UserRepository userRepository, JwtUtil jwtUtil) {
-        this.boardRepository = boardRepository;
-        this.userRepository = userRepository;
-        this.jwtUtil = jwtUtil;
-    }
 
     // 게시글 작성
     public BoardResponseDto createBoard(BoardRequestDto requestDto, HttpServletRequest request) {
         User user = getUserFromToken(request);			// getUserFromToken 메서드를 호출
 
         // 여기 3줄은 입문 에서의 '게시글 작성'과 동일
-        Board board = new Board(requestDto, user);      // user? user.getId()?
+        Board board = new Board(requestDto, user);
         Board saveBoard = boardRepository.save(board);
 
         return new BoardResponseDto(saveBoard);
@@ -44,9 +39,9 @@ public class BoardService {
     // 게시글 전체 조회
     @Transactional(readOnly = true)
     public List<BoardResponseDto> getBoardList() {
-        return boardRepository.findAllByOrderByCreatedAtDesc().stream()        // DB 에서 조회한 List -> stream 으로 변환
-                .map(BoardResponseDto::new)     // stream 처리를 통해, Board 객체 -> BoardResponseDto 로 변환
-                .toList();      // 다시 stream -> List 로 변환
+        return boardRepository.findAllByOrderByCreatedAtDesc().stream()
+                .map(BoardResponseDto::new)
+                .toList();
     }
 
     // 게시글 선택 조회
