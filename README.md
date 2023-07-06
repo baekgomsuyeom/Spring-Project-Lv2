@@ -9,7 +9,7 @@
 ![image](https://github.com/baekgomsuyeom/Spring-Project-Lv2/assets/117441902/f23253ee-350b-401b-ac7e-633fbf755d92)
 
 ## 4. ERD
-![image](https://github.com/baekgomsuyeom/Spring-Project-Lv2/assets/117441902/aa8df317-9da5-4952-867b-8d4dc9dfd76f)
+![image](https://github.com/baekgomsuyeom/Spring-Project-Lv2/assets/117441902/416514a4-91df-4edb-a992-8b4f720d0e89)
 
 ## 5. Q & A
 ### Q1) 처음 설계한 API 명세서에 변경사항이 있었나요? 변경 되었다면 어떤 점 때문 일까요? 첫 설계의 중요성에 대해 작성해 주세요!
